@@ -214,7 +214,7 @@
             approxSum += f(b) / 2;
             approxSum *= dx;
 
-            // Build individual closed trapezoids separated by null breaks
+            // Build individual closed trapezoids separated by null breaks to draw black lines
             for (let i = 0; i < n; i++) {
                 let xLeft = a + i * dx;
                 let xRight = a + (i + 1) * dx;
@@ -223,8 +223,8 @@
                 shapesData.push({x: xLeft, y: f(xLeft)});
                 shapesData.push({x: xRight, y: f(xRight)});
                 shapesData.push({x: xRight, y: 0});
-                shapesData.push({x: xLeft, y: 0}); // Close the individual trapezoid path
-                shapesData.push({x: null, y: null}); // Pen lift break
+                shapesData.push({x: xLeft, y: 0});   // Closes the base floor loop
+                shapesData.push({x: null, y: null}); // Pen lift break forces individual borders
             }
 
         } else {
@@ -246,8 +246,8 @@
                 shapesData.push({x: xLeft, y: height});
                 shapesData.push({x: xRight, y: height});
                 shapesData.push({x: xRight, y: 0});
-                shapesData.push({x: xLeft, y: 0}); // Close the individual rectangle path
-                shapesData.push({x: null, y: null}); // Pen lift break
+                shapesData.push({x: xLeft, y: 0});   // Closes the base floor loop
+                shapesData.push({x: null, y: null}); // Pen lift break forces individual borders
             }
         }
 
@@ -313,11 +313,11 @@
                         label: 'Approximation Subdivisions',
                         data: shapesData,
                         showLine: true,
-                        borderColor: '#000000', // Changed outline color to solid black
-                        backgroundColor: 'rgba(52, 152, 219, 0.4)', // Slightly deeper tint fill
-                        borderWidth: 2, // Thickness of the black divider lines
+                        borderColor: '#000000', // Solid black lines around every shape
+                        backgroundColor: 'rgba(52, 152, 219, 0.4)', 
+                        borderWidth: 2, 
                         pointRadius: 0,
-                        fill: true // Tells Chart.js to respect our closed loops for filling
+                        fill: true 
                     }
                 ]
             },
