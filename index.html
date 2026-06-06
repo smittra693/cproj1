@@ -214,7 +214,7 @@
             approxSum += f(b) / 2;
             approxSum *= dx;
 
-            // Build individual closed trapezoids separated by null breaks to draw black lines
+            // Build individual closed trapezoids separated by null breaks to draw individual border outlines
             for (let i = 0; i < n; i++) {
                 let xLeft = a + i * dx;
                 let xRight = a + (i + 1) * dx;
@@ -313,9 +313,9 @@
                         label: 'Approximation Subdivisions',
                         data: shapesData,
                         showLine: true,
-                        borderColor: '#000000', // Solid black lines around every shape
-                        backgroundColor: 'rgba(52, 152, 219, 0.4)', 
-                        borderWidth: 2, 
+                        borderColor: '#2980b9', // Strong blue line for structural boundaries
+                        backgroundColor: 'rgba(52, 152, 219, 0.4)', // Soft transparent blue tint fill
+                        borderWidth: 2, // Thickness of the blue divider lines
                         pointRadius: 0,
                         fill: true 
                     }
