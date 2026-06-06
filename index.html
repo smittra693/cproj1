@@ -181,13 +181,11 @@
     }
 
     // Exact definite integral of x^2 from a to b
-    // Value is [x^3 / 3] from a to b = (b^3 / 3) - (a^3 / 3)
     function exactIntegral(a, b) {
         return (Math.pow(b, 3) / 3) - (Math.pow(a, 3) / 3);
     }
 
     function calculate() {
-        // 1. Get input values
         const type = document.getElementById('type').value;
         const a = parseFloat(document.getElementById('a').value);
         const b = parseFloat(document.getElementById('b').value);
@@ -204,11 +202,9 @@
 
         const dx = (b - a) / n;
         let approxSum = 0;
+        let shapesData = []; 
 
-        // Data arrays for Chart JS visualization
-        let shapesData = []; // Will store the continuous perimeter outline data
-
-        // 2. Math logic processing
+        // Math logic processing and shape construction
         if (type === 'TRAP') {
             // Trapezoidal Rule logic
             approxSum += f(a) / 2;
@@ -218,19 +214,21 @@
             approxSum += f(b) / 2;
             approxSum *= dx;
 
-            // Trace continuous trapezoidal perimeter down to the x-axis bounds
-            shapesData.push({x: a, y: 0});
-            for (let i = 0; i <= n; i++) {
-                let x = a + i * dx;
-                shapesData.push({x: x, y: f(x)});
+            // Build individual closed trapezoids separated by null breaks
+            for (let i = 0; i < n; i++) {
+                let xLeft = a + i * dx;
+                let xRight = a + (i + 1) * dx;
+                
+                shapesData.push({x: xLeft, y: 0});
+                shapesData.push({x: xLeft, y: f(xLeft)});
+                shapesData.push({x: xRight, y: f(xRight)});
+                shapesData.push({x: xRight, y: 0});
+                shapesData.push({x: xLeft, y: 0}); // Close the individual trapezoid path
+                shapesData.push({x: null, y: null}); // Pen lift break
             }
-            shapesData.push({x: b, y: 0});
 
         } else {
             // Riemann Rectangles (LRAM, RRAM, MRAM)
-            // Start tracing from baseline origin corner
-            shapesData.push({x: a, y: 0});
-
             for (let i = 0; i < n; i++) {
                 let xLeft = a + i * dx;
                 let xRight = a + (i + 1) * dx;
@@ -243,41 +241,37 @@
                 let height = f(evalX);
                 approxSum += height * dx;
 
-                // Step trace along rectangle bounds: left shoulder, then right shoulder
+                // Build individual closed rectangles separated by null breaks
+                shapesData.push({x: xLeft, y: 0});
                 shapesData.push({x: xLeft, y: height});
                 shapesData.push({x: xRight, y: height});
+                shapesData.push({x: xRight, y: 0});
+                shapesData.push({x: xLeft, y: 0}); // Close the individual rectangle path
+                shapesData.push({x: null, y: null}); // Pen lift break
             }
-            // Close baseline pathway path back down to zero at termination point
-            shapesData.push({x: b, y: 0});
         }
 
         const exact = exactIntegral(a, b);
         const error = Math.abs(exact - approxSum);
 
-        // 3. Update Results Section
+        // Update Results Section
         document.getElementById('approx-val').innerText = approxSum.toFixed(6);
         document.getElementById('exact-val').innerText = exact.toFixed(6);
         document.getElementById('error-val').innerText = error.toFixed(6);
 
-        // Hide Calculate Button and reveal results & reset prompt
+        // UI management
         document.getElementById('calculate-btn').style.display = 'none';
         document.getElementById('results').style.display = 'block';
         document.getElementById('prompt-box').style.display = 'block';
 
-        // 4. Generate Graph
+        // Generate Graph
         renderGraph(a, b, shapesData);
     }
 
-    // Handles resetting the interface for a new calculation loop
     function resetPage() {
-        // Hide the results panel and the loop prompt box
         document.getElementById('results').style.display = 'none';
         document.getElementById('prompt-box').style.display = 'none';
-        
-        // Show the primary calculate button again
         document.getElementById('calculate-btn').style.display = 'block';
-        
-        // Clear out old canvas graph state safely on reset
         if (chartInstance) {
             chartInstance.destroy();
             chartInstance = null;
@@ -285,9 +279,8 @@
     }
 
     function renderGraph(a, b, shapesData) {
-        // Generate continuous curve data for f(x) = x^2
         let curveData = [];
-        let padding = (b - a) * 0.1; // Add 10% padding to graph bounds
+        let padding = (b - a) * 0.1; 
         let startX = a - padding;
         let endX = b + padding;
         let steps = 100;
@@ -299,7 +292,6 @@
 
         const ctx = document.getElementById('riemannChart').getContext('2d');
 
-        // Destroy old canvas layout if it exists to refresh fresh state
         if (chartInstance) {
             chartInstance.destroy();
         }
@@ -313,7 +305,7 @@
                         data: curveData,
                         showLine: true,
                         borderColor: '#e74c3c',
-                        borderWidth: 2,
+                        borderWidth: 3,
                         pointRadius: 0,
                         fill: false
                     },
@@ -321,11 +313,11 @@
                         label: 'Approximation Subdivisions',
                         data: shapesData,
                         showLine: true,
-                        borderColor: '#2980b9',
-                        backgroundColor: 'rgba(52, 152, 219, 0.3)',
-                        borderWidth: 2,
+                        borderColor: '#000000', // Changed outline color to solid black
+                        backgroundColor: 'rgba(52, 152, 219, 0.4)', // Slightly deeper tint fill
+                        borderWidth: 2, // Thickness of the black divider lines
                         pointRadius: 0,
-                        fill: 'origin' // Fills down to the x-axis baseline cleanly
+                        fill: true // Tells Chart.js to respect our closed loops for filling
                     }
                 ]
             },
@@ -347,7 +339,7 @@
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                if (!context.raw || isNaN(context.raw.y)) return null;
+                                if (!context.raw || isNaN(context.raw.y) || context.raw.y === null) return null;
                                 return `(x: ${context.raw.x.toFixed(3)}, y: ${context.raw.y.toFixed(3)})`;
                             }
                         }
