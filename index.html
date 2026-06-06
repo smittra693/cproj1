@@ -1,40 +1,44 @@
+Here is the complete, unified `index.html` file combining your HTML structure, styles, and the updated JavaScript logic. It features the $f(x) = x^2$ function, traces perfect perimeters for the shapes, displays the requested math results, and cleanly cycles back using the **"Yes"** button prompt.
+
+You can copy and paste this entire block directly into your file:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riemann Sum Calculator</title>
+    <title>Riemann Sum Calculator (f(x) = x²)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            margin: 20px;
+            margin: 0;
+            padding: 20px;
             background-color: #f4f7f6;
             color: #333;
         }
         .container {
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
             background: #fff;
-            padding: 25px;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         h1, h2 {
             text-align: center;
             color: #2c3e50;
         }
-        .function-banner {
+        .function-display {
             text-align: center;
             font-size: 1.2rem;
-            background: #eef2f3;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
             font-weight: bold;
+            color: #16a085;
+            margin-bottom: 20px;
         }
-        .form-group {
+        .input-group {
             margin-bottom: 15px;
         }
         label {
@@ -60,46 +64,53 @@
             border-radius: 4px;
             font-size: 1.1rem;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.3s;
+            margin-top: 20px;
         }
         button:hover {
             background-color: #2980b9;
         }
-        #results {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f9f9f9;
-            border-left: 5px solid #2ecc71;
-            border-radius: 4px;
-        }
-        .result-item {
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-        .chart-container {
-            position: relative;
-            margin-top: 30px;
-            height: 400px;
-            width: 100%;
-        }
-        #prompt-box {
+        #results, #prompt-box {
             display: none;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .result-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
             text-align: center;
-            margin-top: 25px;
-            padding: 20px;
-            background: #fff8db;
-            border: 1px solid #f1c40f;
-            border-radius: 5px;
+            border-left: 4px solid #3498db;
         }
-        #prompt-box button {
-            display: inline-block;
-            width: auto;
-            padding: 10px 30px;
+        .result-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+        .result-card p {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .graph-container {
+            position: relative;
+            margin-bottom: 25px;
+            height: 400px;
+        }
+        #reset-btn {
+            background-color: #2ecc71;
+        }
+        #reset-btn:hover {
             background-color: #27ae60;
-            margin-top: 10px;
-        }
-        #prompt-box button:hover {
-            background-color: #219653;
         }
     </style>
 </head>
@@ -107,10 +118,10 @@
 
 <div class="container">
     <h1>Riemann Sum Visualizer</h1>
-    <div class="function-banner">Function: f(x) = e<sup>-x</sup></div>
+    <div class="function-display">Target Function: f(x) = x²</div>
 
-    <div id="calculator-form">
-        <div class="form-group">
+    <div id="input-section">
+        <div class="input-group">
             <label for="type">Approximation Type:</label>
             <select id="type">
                 <option value="LRAM">LRAM (Left Riemann Sum)</option>
@@ -120,38 +131,49 @@
             </select>
         </div>
 
-        <div class="form-group">
+        <div class="input-group">
             <label for="a">Lower x value (a):</label>
-            <input type="number" id="a" step="any" value="0" required>
+            <input type="number" id="a" value="0" step="any">
         </div>
 
-        <div class="form-group">
-            <label for="b">Higher x value (b):</label>
-            <input type="number" id="b" step="any" value="3" required>
+        <div class="input-group">
+            <label for="b">Upper x value (b):</label>
+            <input type="number" id="b" value="4" step="any">
         </div>
 
-        <div class="form-group">
+        <div class="input-group">
             <label for="n">Number of Subdivisions (n):</label>
-            <input type="number" id="n" min="1" max="200" value="6" required>
+            <input type="number" id="n" value="4" min="1" step="1">
         </div>
 
-        <button type="button" id="calculate-btn" onclick="calculate()">Calculate & Graph</button>
+        <button id="calculate-btn" onclick="calculate()">Calculate & Graph</button>
     </div>
 
-    <div id="results" style="display: none;">
+    <div id="results">
         <h2>Results</h2>
-        <div class="result-item"><strong>Approximation Value:</strong> <span id="approx-val">0</span></div>
-        <div class="result-item"><strong>Exact Value (Integral):</strong> <span id="exact-val">0</span></div>
-        <div class="result-item"><strong>Absolute Error:</strong> <span id="error-val">0</span></div>
-        
-        <div class="chart-container">
-            <canvas id="riemannChart"></canvas>
+        <div class="results-grid">
+            <div class="result-card">
+                <h3>Approximation</h3>
+                <p id="approx-val">0.000000</p>
+            </div>
+            <div class="result-card" style="border-left-color: #2ecc71;">
+                <h3>Actual Value</h3>
+                <p id="exact-val">0.000000</p>
+            </div>
+            <div class="result-card" style="border-left-color: #e74c3c;">
+                <h3>Absolute Error</h3>
+                <p id="error-val">0.000000</p>
+            </div>
         </div>
 
-        <div id="prompt-box">
-            <p>Would you like to try another approximation?</p>
-            <button onclick="resetForm()">Yes</button>
+        <div class="graph-container">
+            <canvas id="riemannChart"></canvas>
         </div>
+    </div>
+
+    <div id="prompt-box">
+        <p style="text-align: center; font-weight: bold; font-size: 1.1rem;">Would you like to try out another approximation?</p>
+        <button id="reset-btn" onclick="resetPage()">Yes</button>
     </div>
 </div>
 
@@ -251,6 +273,22 @@
         renderGraph(a, b, shapesData);
     }
 
+    // Handles resetting the interface for a new calculation loop
+    function resetPage() {
+        // Hide the results panel and the loop prompt box
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('prompt-box').style.display = 'none';
+        
+        // Show the primary calculate button again
+        document.getElementById('calculate-btn').style.display = 'block';
+        
+        // Clear out old canvas graph state safely on reset
+        if (chartInstance) {
+            chartInstance.destroy();
+            chartInstance = null;
+        }
+    }
+
     function renderGraph(a, b, shapesData) {
         // Generate continuous curve data for f(x) = x^2
         let curveData = [];
@@ -322,16 +360,6 @@
                 }
             }
         });
-    }
-</script>
-    function resetForm() {
-        // Hide results/prompt and bring back calculate interface safely
-        document.getElementById('results').style.display = 'none';
-        document.getElementById('prompt-box').style.display = 'none';
-        document.getElementById('calculate-btn').style.display = 'block';
-        
-        // Scroll back up to the inputs smooth
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
 
