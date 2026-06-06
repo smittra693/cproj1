@@ -120,4 +120,25 @@
             <label for="type">Approximation Type:</label>
             <select id="type">
                 <option value="LRAM">LRAM (Left Riemann Sum)</option>
-                <option value="RRAM">RRAM (Right Riemann
+                <option value="RRAM">RRAM (Right Riemann Sum)</option>
+                <option value="MRAM">MRAM (Midpoint Riemann Sum)</option>
+                <option value="Trapezoidal">Trapezoidal Rule</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="lowerX">Lower x value (a):</label>
+            <input type="number" id="lowerX" value="0" step="any">
+        </div>
+
+        <div class="input-group">
+            <label for="upperX">Upper x value (b):</label>
+            <input type="number" id="upperX" value="4" step="any">
+        </div>
+
+        <div class="input-group">
+            <label for="subdivisions">Number of Subdivisions (n):</label>
+            <input type="number" id="subdivisions" value="4" min="1" step="1">
+        </div>
+
+        <button id="calculate-btn" onclick="runCalculation()">Calculate & Graph</
